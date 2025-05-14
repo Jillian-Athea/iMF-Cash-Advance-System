@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Bookkeeper Dashboard - Construction Corp.</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+		<script src="../../js/crypto.js"></script>
+		<script src="../../js/auth.js"></script>
+		<script src="../../js/bookkeeper/cashAdvance.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+		/>
+		<script>
+			tailwind.config = {
+				darkMode: "class",
+				theme: {
+					extend: {
+						colors: {
+							primary: "#8B1C23",
+							secondary: "#A52A2A",
+						},
+					},
+				},
+			};
+		</script>
+	</head>
+	<body
+		class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 transition-colors"
+	>
+		<!-- Sidebar -->
+		<div
+			id="sidebar"
+			class="fixed top-0 left-0 h-full w-64 bg-primary text-white shadow-lg transition-transform duration-300 z-40"
+		>
+			<div class="p-4">
+				<div class="flex items-center justify-between mb-8">
+					<img src="../../images/imfLogo.png" alt="Logo" class="h-12" />
+					<button
+						id="closeSidebar"
+						class="text-white hover:bg-secondary hover:text-white focus:outline-none p-2 rounded-full transition-colors border border-white/20"
+						title="Close sidebar"
+					>
+						<i class="fas fa-chevron-left text-2xl"></i>
+					</button>
+				</div>
+				<hr class="border-white/20 mb-6" />
+				<nav>
+					<ul class="space-y-2">
+						<li>
+							<a
+								href="#"
+								class="flex items-center space-x-3 p-3 rounded-lg bg-secondary/80 text-white transition-colors group"
+							>
+								<i
+									class="fas fa-home group-hover:scale-110 transition-transform"
+								></i>
+								<span>Dashboard</span>
+							</a>
+						</li>
+						<li>
+							<a
+								href="transaction.html"
+								class="flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary/80 transition-colors group"
+							>
+								<i
+									class="fas fa-check-circle group-hover:scale-110 transition-transform"
+								></i>
+								<span>Transaction History</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</div>
+
+		<!-- Sidebar Overlay for mobile -->
+		<div
+			id="sidebarOverlay"
+			class="fixed inset-0 bg-black bg-opacity-30 z-30 hidden transition-opacity duration-300"
+		></div>
+
+		<!-- Main Content -->
+		<div id="mainContent" class="transition-all duration-300">
+			<!-- Top Navigation -->
+			<nav class="bg-white dark:bg-gray-800 shadow-lg transition-colors">
+				<div class="max-w-full mx-auto px-4">
+					<div class="flex justify-between items-center h-16">
+						<div class="flex items-center">
+							<button
+								id="openSidebar"
+								class="text-gray-500 hover:bg-primary hover:text-white p-2 rounded-full transition-colors border border-gray-300 mr-2 shadow-sm"
+							>
+								<i class="fas fa-bars text-xl"></i>
+							</button>
+							<h1 class="ml-2 text-xl font-semibold text-gray-800">
+								Bookkeeper Dashboard
+							</h1>
+						</div>
+						<div class="flex items-center space-x-4">
+							<div class="relative">
+								<button
+									id="userMenuBtn"
+									class="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:text-primary focus:outline-none"
+								>
+									<span
+										id="userAvatar"
+										class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm"
+									></span>
+									<span id="userFirstName" class="hidden md:block"></span>
+									<i class="fas fa-chevron-down ml-1"></i>
+								</button>
+								<div
+									id="userDropdown"
+									class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 z-50 transition-all duration-200"
+								>
+									<div
+										class="px-4 py-3 border-b border-gray-200 dark:border-gray-700"
+									>
+										<div class="flex items-center space-x-3">
+											<div
+												class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg"
+												id="userAvatarLarge"
+											></div>
+											<div class="flex-1">
+												<h4
+													class="font-semibold text-gray-800 dark:text-gray-100"
+													id="userFullName"
+												>
+													Loading...
+												</h4>
+												<p
+													class="text-sm text-gray-500 dark:text-gray-400"
+													id="userEmail"
+												>
+													Loading...
+												</p>
+											</div>
+										</div>
+									</div>
+									<a
+										id="viewProfileBtn"
+										href="#"
+										class="block px-4 py-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+									>
+										<i class="fas fa-user mr-2"></i>View Profile
+									</a>
+									<button
+										id="toggleDarkMode"
+										class="w-full text-left px-4 py-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+									>
+										<i class="fas fa-moon mr-2"></i>
+										<span id="darkModeText">Dark Mode</span>
+									</button>
+									<hr class="my-2 border-gray-200 dark:border-gray-700" />
+									<button
+										id="logoutBtn"
+										class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition"
+									>
+										<i class="fas fa-sign-out-alt mr-2"></i>Log Out
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</nav>
+
+			<!-- Dashboard Content -->
+			<main class="p-6">
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+					<!-- Stats Cards -->
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+						<div class="flex items-center">
+							<div
+								class="p-3 rounded-full bg-primary bg-opacity-10 text-primary"
+							>
+								<i class="fas fa-hourglass-half text-2xl"></i>
+							</div>
+							<div class="ml-4">
+								<h2 class="text-gray-600 dark:text-gray-300 text-sm">
+									Pending Requests
+								</h2>
+								<p
+									class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+									id="pendingRequestsCount"
+								>
+									0
+								</p>
+							</div>
+						</div>
+					</div>
+					<!-- New Total Budget Card -->
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+						<div class="flex items-center">
+							<div
+								class="p-3 rounded-full bg-primary bg-opacity-10 text-primary"
+							>
+								<i class="fas fa-wallet text-2xl"></i>
+							</div>
+							<div class="ml-4">
+								<h2 class="text-gray-600 dark:text-gray-300 text-sm">
+									Total Budget
+								</h2>
+								<p
+									class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+									id="totalBudgeted"
+								>
+									₱0
+								</p>
+							</div>
+						</div>
+					</div>
+					<!-- New Used Money Card -->
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+						<div class="flex items-center">
+							<div
+								class="p-3 rounded-full bg-green-500 bg-opacity-10 text-green-700"
+							>
+								<i class="fas fa-arrow-up text-2xl"></i>
+							</div>
+							<div class="ml-4">
+								<h2 class="text-gray-600 dark:text-gray-300 text-sm">
+									Used Money
+								</h2>
+								<p
+									class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+									id="usedMoney"
+								>
+									₱0
+								</p>
+							</div>
+						</div>
+					</div>
+					<!-- New Available Money Card -->
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+						<div class="flex items-center">
+							<div
+								class="p-3 rounded-full bg-blue-500 bg-opacity-10 text-blue-700"
+							>
+								<i class="fas fa-arrow-down text-2xl"></i>
+							</div>
+							<div class="ml-4">
+								<h2 class="text-gray-600 dark:text-gray-300 text-sm">
+									Available Money
+								</h2>
+								<p
+									class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+									id="availableMoney"
+								>
+									₱0
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+						<div class="flex items-center">
+							<div
+								class="p-3 rounded-full bg-primary bg-opacity-10 text-primary"
+							>
+								<i class="fas fa-wallet text-2xl"></i>
+							</div>
+							<div class="ml-4">
+								<h2 class="text-gray-600 dark:text-gray-300 text-sm">
+									Total Advanced
+								</h2>
+								<p
+									class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+									id="totalAdvanced"
+								>
+									₱0
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+						<div class="flex items-center">
+							<div
+								class="p-3 rounded-full bg-primary bg-opacity-10 text-primary"
+							>
+								<i class="fas fa-flag-checkered text-2xl"></i>
+							</div>
+							<div class="ml-4">
+								<h2 class="text-gray-600 dark:text-gray-300 text-sm">
+									Completed
+								</h2>
+								<p
+									class="text-2xl font-semibold text-gray-800 dark:text-gray-100"
+									id="completedCount"
+								>
+									0
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Filter and Search -->
+				<div class="flex flex-col md:flex-row md:items-end gap-4 mb-6">
+					<!-- Date Filter -->
+					<div>
+						<label
+							class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+							>Filter by Date</label
+						>
+						<select
+							id="dateFilter"
+							class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 px-3 py-2"
+						>
+							<option value="all">All</option>
+							<option value="today">Today</option>
+							<option value="week">This Week</option>
+							<option value="month">This Month</option>
+							<option value="custom">Custom Range</option>
+						</select>
+					</div>
+					<div id="customDateRange" class="hidden flex gap-2">
+						<input
+							type="date"
+							id="startDate"
+							class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 px-2 py-1"
+						/>
+						<span class="self-center dark:text-gray-200">to</span>
+						<input
+							type="date"
+							id="endDate"
+							class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 px-2 py-1"
+						/>
+					</div>
+					<!-- Status Filter -->
+					<div>
+						<label
+							class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+							>Status</label
+						>
+						<select
+							id="statusFilter"
+							class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 px-3 py-2"
+						>
+							<option value="all">All</option>
+							<option value="pending">Pending</option>
+							<option value="approved">Approved</option>
+							<option value="completed">Completed</option>
+							<option value="rejected">Rejected</option>
+						</select>
+					</div>
+					<!-- Search -->
+					<div class="flex-1">
+						<label
+							class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+							>Search</label
+						>
+						<input
+							type="text"
+							id="searchInput"
+							placeholder="Search by name, purpose, description, or budget..."
+							class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 px-3 py-2"
+						/>
+					</div>
+				</div>
+
+				<!-- Requests Cards Container -->
+				<div
+					id="bookkeeperRequestsContainer"
+					class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+				></div>
+			</main>
+		</div>
+
+		<!-- Toast Notification -->
+		<div
+			id="toast"
+			class="fixed bottom-6 right-6 z-50 min-w-[200px] max-w-xs rounded-lg shadow-lg px-6 py-4 flex items-center space-x-3 transition-all duration-300 hidden"
+		>
+			<i id="toastIcon" class="fas"></i>
+			<span id="toastMessage"></span>
+		</div>
+
+		<!-- Load Profile Modal -->
+		<div id="profileModalContainer"></div>
+		<script>
+			fetch("profile-modal.html")
+				.then((res) => res.text())
+				.then((html) => {
+					document.getElementById("profileModalContainer").innerHTML = html;
+					// Now load the JS
+					const script = document.createElement("script");
+					script.src = "../../js/bookkeeper/profile.js";
+					document.body.appendChild(script);
+				});
+		</script>
+
+		<script>
+			// Sidebar Toggle
+			const sidebar = document.getElementById("sidebar");
+			const mainContent = document.getElementById("mainContent");
+			const openSidebarBtn = document.getElementById("openSidebar");
+			const closeSidebarBtn = document.getElementById("closeSidebar");
+			const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+			function toggleSidebar(show) {
+				if (show) {
+					sidebar.classList.remove("-translate-x-full");
+					mainContent.classList.add("md:ml-64");
+					if (window.innerWidth < 1024) {
+						sidebarOverlay.classList.remove("hidden");
+						sidebarOverlay.classList.add("block");
+					}
+					openSidebarBtn.classList.add("hidden");
+				} else {
+					sidebar.classList.add("-translate-x-full");
+					mainContent.classList.remove("md:ml-64");
+					sidebarOverlay.classList.remove("block");
+					sidebarOverlay.classList.add("hidden");
+					openSidebarBtn.classList.remove("hidden");
+				}
+			}
+
+			// Default: sidebar open on desktop, closed on mobile
+			function initializeSidebar() {
+				if (window.innerWidth >= 1024) {
+					toggleSidebar(true);
+				} else {
+					toggleSidebar(false);
+				}
+			}
+
+			// Call on page load
+			initializeSidebar();
+
+			// Call on window resize
+			window.addEventListener("resize", initializeSidebar);
+
+			openSidebarBtn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				toggleSidebar(true);
+			});
+			closeSidebarBtn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				toggleSidebar(false);
+			});
+			sidebarOverlay.addEventListener("click", () => toggleSidebar(false));
+
+			// Prevent closing sidebar when clicking inside
+			sidebar.addEventListener("click", (e) => e.stopPropagation());
+
+			// User Dropdown
+			const userMenuBtn = document.getElementById("userMenuBtn");
+			const userDropdown = document.getElementById("userDropdown");
+			userMenuBtn.addEventListener("click", function (e) {
+				e.stopPropagation();
+				userDropdown.classList.toggle("hidden");
+			});
+			document.addEventListener("click", function (e) {
+				if (!userMenuBtn.contains(e.target)) {
+					userDropdown.classList.add("hidden");
+				}
+			});
+
+			// Set user information in dropdown
+			const user = getSecureSession("user");
+			if (user) {
+				const initials =
+					(user.user_firstname[0] || "") + (user.user_lastname[0] || "");
+				const fullName = `${user.user_firstname} ${user.user_lastname}`;
+
+				// Set small avatar in header
+				document.getElementById("userAvatar").textContent =
+					initials.toUpperCase();
+				document.getElementById("userFirstName").textContent =
+					user.user_firstname;
+
+				// Set large avatar and details in dropdown
+				document.getElementById("userAvatarLarge").textContent =
+					initials.toUpperCase();
+				document.getElementById("userFullName").textContent = fullName;
+				document.getElementById("userEmail").textContent =
+					user.user_email || "No email available";
+			}
+
+			// Dark Mode
+			const html = document.documentElement;
+			const darkModeBtn = document.getElementById("toggleDarkMode");
+			const darkModeText = document.getElementById("darkModeText");
+			function setDarkMode(isDark) {
+				if (isDark) {
+					html.classList.add("dark");
+					localStorage.setItem("theme", "dark");
+					darkModeText.textContent = "Light Mode";
+					darkModeBtn.querySelector("i").classList.remove("fa-moon");
+					darkModeBtn.querySelector("i").classList.add("fa-sun");
+				} else {
+					html.classList.remove("dark");
+					localStorage.setItem("theme", "light");
+					darkModeText.textContent = "Dark Mode";
+					darkModeBtn.querySelector("i").classList.remove("fa-sun");
+					darkModeBtn.querySelector("i").classList.add("fa-moon");
+				}
+			}
+			// On load
+			if (localStorage.getItem("theme") === "dark") {
+				setDarkMode(true);
+			} else {
+				setDarkMode(false);
+			}
+			darkModeBtn.addEventListener("click", function (e) {
+				e.stopPropagation();
+				setDarkMode(!html.classList.contains("dark"));
+			});
+
+			// Log Out
+			document
+				.getElementById("logoutBtn")
+				.addEventListener("click", function () {
+					clearSecureSession("user");
+					window.location.href = "../login.html";
+				});
+		</script>
+	</body>
+</html>
